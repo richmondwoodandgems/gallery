@@ -10,7 +10,6 @@ export interface Photo {
 export interface Piece {
   id: string;
   title: string;
-  collection: string;
   description: string;
   addedAt: string;
   photos: Photo[];
@@ -19,6 +18,5 @@ export interface Piece {
 export interface Manifest {
   generatedAt: string;
   about: string;
-  collections: string[];
   items: Piece[];
 }

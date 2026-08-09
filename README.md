@@ -19,9 +19,11 @@ src/                     React + TypeScript front end
 .github/workflows/       builds and deploys to GitHub Pages on every push to main
 ```
 
-Photos are grouped into "pieces" by file name: `Board.jpg`, `Board-2.jpg` and
-`Board-3.jpg` are three views of one piece. An optional `Board.txt` supplies the
-description; a subfolder name becomes a filterable collection.
+Photos are grouped into "pieces" by name: a top-level `Board.jpg` is the piece's
+cover, and a folder named `Board/` holds any additional photos of it (file names
+inside don't matter — they sort naturally). A folder with no matching cover photo
+is a piece on its own, titled after the folder. An optional `Board.txt` (top-level
+or inside the folder) supplies the description.
 
 Derivatives are cached in `public/media/.cache.json` and keyed by source size and mtime,
 so a rebuild only reprocesses photos that actually changed.

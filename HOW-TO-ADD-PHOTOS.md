@@ -6,24 +6,17 @@ stays up until the new one builds correctly.
 
 ---
 
-## Adding pictures
+## Adding a new piece
 
 1. Go to the website's project page on GitHub and click the **`content`** folder, then the
    **`gallery`** folder.
 2. Click the green **`Add file`** button near the top right, then choose **`Upload files`**.
-3. Drag your pictures from your computer into the big box on the page (or click
-   **`choose your files`** and pick them).
+3. Drag your picture from your computer into the big box on the page (or click
+   **`choose your files`** and pick it).
 4. Scroll down and click the green **`Commit changes`** button.
-5. Wait about **two minutes**, then refresh the website. The new pictures will be there.
+5. Wait about **two minutes**, then refresh the website. The new piece will be there.
 
-That's it.
-
----
-
-## Naming your pictures
-
-**The file name becomes the caption under the picture.** Before you upload, rename the
-file to whatever you want people to read.
+**The file name becomes the caption**, so rename the file before uploading:
 
 | File name | Caption on the website |
 | --- | --- |
@@ -31,52 +24,59 @@ file to whatever you want people to read.
 | `Cherry Slab with Amethyst.jpg` | Cherry Slab with Amethyst |
 | `IMG_4832.jpg` | IMG_4832 *(rename this one!)* |
 
-### Several photos of the same piece
+---
 
-Put a dash and a number at the end. They will be grouped together as one piece, and
-visitors can click through them.
+## Adding more photos of the same piece
+
+The picture in the main `gallery` folder is the **cover photo** — the one shown in the
+grid. To add more angles and close-ups, put them in a **folder with the same name**:
 
 ```
-Cherry Slab with Amethyst.jpg
-Cherry Slab with Amethyst-2.jpg
-Cherry Slab with Amethyst-3.jpg
+gallery/
+  Cherry Slab with Amethyst.jpg      <- cover photo
+  Cherry Slab with Amethyst/         <- folder, same name
+      close-up.jpg                   <- extra photos; names don't matter
+      side view.jpg
+      IMG_2041.jpg
 ```
 
-The picture **without** a number is the one shown in the gallery grid.
+Visitors click the cover photo and page through everything in the folder.
+
+**To make the folder while uploading:** on the upload page, GitHub keeps folders — so
+drag the whole folder from your computer into the upload box. Or, when creating files by
+hand, type the folder name and a `/` in the file-name box and GitHub creates the folder.
+
+Extra photos inside a folder show in A-to-Z order of their file names, so name them
+`1.jpg`, `2.jpg`, `3.jpg` if you care about the order.
+
+*(A folder without a matching cover photo also works — the folder name becomes the
+caption and the first photo inside becomes the cover.)*
 
 ---
 
 ## Adding a description (optional)
 
-Make a plain text file with the **same name** as the picture and upload it alongside:
+Make a plain text file with the **same name** as the piece and upload it next to the
+cover photo:
 
-- Picture: `Cherry Slab with Amethyst.jpg`
+- Cover photo: `Cherry Slab with Amethyst.jpg`
 - Description: `Cherry Slab with Amethyst.txt`
 
-Whatever you type in that text file shows up under the title.
+Whatever you type in that file shows up under the title when a visitor opens the piece.
+(A text file dropped inside the piece's folder works too.)
 
 To change the story paragraph shown beneath the gallery, edit `content/about.txt`.
 
 ---
 
-## Making sections (optional)
+## Removing or renaming
 
-If you want the website split into groups — say **Tables**, **Serving Boards**, and
-**Small Pieces** — put the photos into folders with those names inside `content/gallery`.
-Buttons appear at the top of the site so visitors can filter.
-
-To make a folder while uploading, drag a whole folder from your computer into the upload
-box. GitHub keeps the folder name.
-
----
-
-## Removing or renaming a picture
-
-1. Click the picture's file name in `content/gallery`.
+1. Click the file's name in `content/gallery`.
 2. Click the **pencil icon** (rename) or the **trash can icon** (delete) at the top right.
 3. Scroll down, click **`Commit changes`**.
 
-The website updates a couple of minutes later.
+If you rename a piece, rename **both** the cover photo and its folder so they stay
+matched. The website updates a couple of minutes later.
 
 ---
 
@@ -89,7 +89,7 @@ The website updates a couple of minutes later.
 - **Big photos are fine.** The site automatically makes smaller copies so pages load fast.
   You never need to resize anything.
 - **Animated GIFs work** and keep animating.
-- **Newest photos appear first** in the gallery.
+- **Newest pieces appear first** in the gallery.
 - Don't use the characters `/` `\` `:` `*` `?` `"` `<` `>` `|` in file names.
 
 ---

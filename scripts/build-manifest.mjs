@@ -6,10 +6,15 @@
  * inside a subfolder to make a collection) and this script does the rest.
  *
  * Naming conventions:
- *   "Walnut River Board.jpg"    -> a piece titled "Walnut River Board"
- *   "Walnut River Board-2.jpg"  -> a second photo of that same piece
- *   "Walnut River Board.txt"    -> optional description for that piece
- *   content/gallery/Tables/...  -> piece is filed under the "Tables" collection
+ *   "Walnut River Board.jpg"     -> a piece titled "Walnut River Board"; this
+ *                                   top-level photo is the piece's cover
+ *   "Walnut River Board-2.jpg"   -> another photo of that same piece
+ *   "Walnut River Board/"        -> folder of additional photos of that piece;
+ *                                   file names inside do not matter
+ *   "Walnut River Board.txt"     -> optional description (also honored as any
+ *                                   .txt inside the piece's folder)
+ *   A folder with no matching top-level photo is a piece on its own: the
+ *   folder name is the title and its first photo (by name) is the cover.
  */
 
 import { createHash } from 'node:crypto';
@@ -101,8 +106,13 @@ function normalizeText(raw) {
     .join('\n\n');
 }
 
-function idFor(collection, stem) {
-  return createHash('sha1').update(`${collection}/${stem}`.toLowerCase()).digest('hex').slice(0, 12);
+/** Pieces are keyed by lowercased stem so "Board.JPG" and "board/" match up. */
+function keyFor(stem) {
+  return stem.trim().toLowerCase();
+}
+
+function idFor(key) {
+  return createHash('sha1').update(key).digest('hex').slice(0, 12);
 }
 
 async function readCache() {
@@ -194,29 +204,51 @@ async function main() {
   const files = await walk(CONTENT_DIR);
   const cache = await readCache();
   const nextCache = {};
+  const skipped = [];
 
+  // Split the tree: top-level files stand alone; anything deeper belongs to
+  // the piece named by its first-level folder.
+  const classify = (file) => {
+    const segments = path.relative(CONTENT_DIR, file).split(path.sep);
+    return segments.length === 1 ? { folder: null } : { folder: segments[0] };
+  };
+
+  // A description can live at the top level ("Board.txt") or be any .txt
+  // dropped inside the piece's folder.
   const descriptions = new Map();
   for (const file of files) {
     if (path.extname(file).toLowerCase() !== '.txt') continue;
-    const collection = path.relative(CONTENT_DIR, path.dirname(file)).split(path.sep)[0] || '';
-    const { stem } = parseName(path.basename(file));
-    descriptions.set(idFor(collection, stem), normalizeText(await fs.readFile(file, 'utf8')));
+    const { folder } = classify(file);
+    const key = folder ? keyFor(folder) : keyFor(parseName(path.basename(file)).stem);
+    descriptions.set(key, normalizeText(await fs.readFile(file, 'utf8')));
   }
 
   const pieces = new Map();
-  const skipped = [];
+  const ensurePiece = (key, title) => {
+    if (!pieces.has(key)) {
+      pieces.set(key, {
+        id: idFor(key),
+        title: titleize(title),
+        description: descriptions.get(key) ?? '',
+        addedAt: 0,
+        photos: [],
+      });
+    }
+    return pieces.get(key);
+  };
 
+  const imageFiles = [];
   for (const file of files) {
     const ext = path.extname(file).toLowerCase();
-    if (UNSUPPORTED_EXT.has(ext)) {
-      skipped.push(path.relative(CONTENT_DIR, file));
-      continue;
-    }
-    if (!IMAGE_EXT.has(ext)) continue;
+    if (UNSUPPORTED_EXT.has(ext)) skipped.push(path.relative(CONTENT_DIR, file));
+    else if (IMAGE_EXT.has(ext)) imageFiles.push(file);
+  }
+  // Natural sort so "photo-2" comes before "photo-10" inside folders.
+  imageFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
-    const collection = path.relative(CONTENT_DIR, path.dirname(file)).split(path.sep)[0] || '';
-    const { stem, order } = parseName(path.basename(file));
-    const id = idFor(collection, stem);
+  let folderIndex = 0;
+  for (const file of imageFiles) {
+    const { folder } = classify(file);
     const stat = await fs.stat(file);
 
     let derived;
@@ -227,17 +259,20 @@ async function main() {
       continue;
     }
 
-    if (!pieces.has(id)) {
-      pieces.set(id, {
-        id,
-        title: titleize(stem),
-        collection: collection ? titleize(collection) : 'Gallery',
-        description: descriptions.get(id) ?? '',
-        addedAt: stat.mtimeMs,
-        photos: [],
-      });
+    let piece;
+    let order;
+    if (folder === null) {
+      // Top-level photo: cover (order 1) or a numbered companion.
+      const { stem, order: n } = parseName(path.basename(file));
+      piece = ensurePiece(keyFor(stem), stem);
+      order = n;
+    } else {
+      // Folder photo: always sorts after the top-level cover and companions,
+      // in natural filename order.
+      piece = ensurePiece(keyFor(folder), folder);
+      order = 1000 + folderIndex++;
     }
-    const piece = pieces.get(id);
+
     piece.addedAt = Math.max(piece.addedAt, stat.mtimeMs);
     piece.photos.push({ order, ...derived });
   }
@@ -260,7 +295,6 @@ async function main() {
   const manifest = {
     generatedAt: new Date().toISOString(),
     about,
-    collections: [...new Set(items.map((i) => i.collection))].sort(),
     items,
   };
 
