@@ -60,12 +60,29 @@ function parseName(basename) {
   return { stem: stem.trim(), order: 1 };
 }
 
+/** Words left lowercase mid-title so casual file names still read well. */
+const MINOR_WORDS = new Set([
+  'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'nor', 'of',
+  'on', 'or', 'the', 'to', 'up', 'via', 'with',
+]);
+
 function titleize(stem) {
-  return stem
+  const words = stem
     .replace(/[_]+/g, ' ')
     .replace(/\s*-\s*/g, ' – ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .split(' ');
+
+  return words
+    .map((word, index) => {
+      // Anything the owner capitalized themselves is left exactly as typed.
+      if (/[A-Z]/.test(word)) return word;
+      const isEdge = index === 0 || index === words.length - 1;
+      if (!isEdge && MINOR_WORDS.has(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
 }
 
 function idFor(collection, stem) {
