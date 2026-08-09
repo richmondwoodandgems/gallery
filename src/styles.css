@@ -220,13 +220,25 @@ body {
   gap: 0.75rem;
 }
 
-.lb-stage img {
+.lb-frame {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+}
+
+.lb-frame img {
   max-width: 100%;
-  max-height: 74vh;
+  /* Leaves room for the caption; the filmstrip claims more below. */
+  max-height: 72vh;
   object-fit: contain;
   border-radius: 8px;
-  margin: 0 auto;
   animation: lb-rise 0.3s ease;
+}
+
+/* A piece with several photos gives up image height to the filmstrip. */
+.lb-stage-strip .lb-frame img {
+  max-height: 58vh;
 }
 
 .lb-stage figcaption {
@@ -305,6 +317,89 @@ body {
   }
   .lb-next {
     right: 0.25rem;
+  }
+}
+
+/* ---------- filmstrip ---------- */
+
+/*
+ * `width: fit-content` with auto margins centers a short strip while still
+ * letting a long one scroll from its true left edge.
+ */
+.lb-strip {
+  display: flex;
+  gap: 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 35%) transparent;
+  overscroll-behavior-x: contain;
+}
+
+.lb-strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.lb-strip::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 35%);
+  border-radius: 999px;
+}
+
+.lb-thumb {
+  flex: 0 0 auto;
+  /* Scales with the viewport so the strip stays usable on a phone. */
+  width: clamp(3rem, 8vh, 4.75rem);
+  height: clamp(3rem, 8vh, 4.75rem);
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  scroll-snap-align: center;
+  opacity: 0.55;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: opacity 0.2s ease, outline-color 0.2s ease;
+}
+
+.lb-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lb-thumb:hover {
+  opacity: 0.85;
+}
+
+.lb-thumb-active {
+  opacity: 1;
+  outline-color: #fff;
+}
+
+.lb-thumb:focus-visible {
+  outline-color: #fff;
+}
+
+/* Landscape phones have almost no vertical room; drop the description and
+   tighten everything so the photo still dominates. */
+@media (max-height: 520px) {
+  .lb-stage-strip .lb-frame img {
+    max-height: 50vh;
+  }
+
+  .lb-stage figcaption p {
+    display: none;
+  }
+
+  .lb-stage figcaption h2 {
+    font-size: 1.2rem;
   }
 }
 
