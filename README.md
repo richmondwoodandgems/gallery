@@ -3,7 +3,7 @@
 Photo gallery for live edge wood boards set with gemstones and rock under resin.
 Static site, hosted free on GitHub Pages.
 
-**Live site:** https://ghostlyinfluence.github.io/richmond-wood-and-gems/
+**Live site:** https://richmondwoodandgems.github.io/gallery/
 
 > Adding photos does not require any of the below — see
 > [HOW-TO-ADD-PHOTOS.md](HOW-TO-ADD-PHOTOS.md), which is written for non-developers.
@@ -40,6 +40,7 @@ error in the editor until `npm run media` (or `npm run dev`) has run once.
 
 ## Deployment
 
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds with
-`BASE_PATH=/richmond-wood-and-gems/` and publishes to GitHub Pages. One-time setup in the
-repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Pushing to `main` triggers `.github/workflows/deploy.yml`, which publishes to GitHub
+Pages. `BASE_PATH` is derived from the repository name at build time, so renaming the
+repo needs no code change. One-time setup in the repo: **Settings → Pages → Build and
+deployment → Source: GitHub Actions**.
