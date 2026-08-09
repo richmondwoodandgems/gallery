@@ -25,11 +25,10 @@ export default function App() {
     <div className="page">
       <header className="masthead">
         <p className="eyebrow">Handmade in Richmond</p>
-        <h1>Richmond Wood &amp; Gems</h1>
-        <p className="tagline">
-          Live edge boards finished in resin, set with gemstones and rough rock. Every piece is one of a kind.
-        </p>
-        {manifest.about && <p className="about">{manifest.about}</p>}
+        <h1>
+          Richmond Wood <span className="amp">&amp;</span> Gems
+        </h1>
+        <p className="tagline">Live-edge boards, hand-set with gemstones and sealed under glass-clear resin.</p>
       </header>
 
       {showFilters && (
@@ -60,8 +59,10 @@ export default function App() {
         )}
       </main>
 
+      {manifest.about && <section className="story">{manifest.about}</section>}
+
       <footer className="footer">
-        <p>Photographs are for reference only — pieces are not sold through this site.</p>
+        <p>A gallery of finished work — pieces are not sold through this site.</p>
         <p className="muted">© {new Date().getFullYear()} Richmond Wood &amp; Gems</p>
       </footer>
 

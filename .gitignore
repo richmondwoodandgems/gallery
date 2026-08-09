@@ -5,4 +5,5 @@ dist/
 
 # Generated from content/gallery on every build.
 public/media/
+public/og.jpg
 src/data/manifest.json

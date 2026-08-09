@@ -55,7 +55,7 @@ Make a plain text file with the **same name** as the picture and upload it along
 
 Whatever you type in that text file shows up under the title.
 
-To change the paragraph at the top of the whole website, edit `content/about.txt`.
+To change the story paragraph shown beneath the gallery, edit `content/about.txt`.
 
 ---
 

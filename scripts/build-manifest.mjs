@@ -267,6 +267,15 @@ async function main() {
   await fs.writeFile(path.join(DATA_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await fs.writeFile(CACHE_FILE, JSON.stringify(nextCache));
 
+  // Social-preview image (index.html og:image): newest piece, cropped to the
+  // 1200x630 Open Graph frame, as JPEG for link-unfurler compatibility.
+  if (items.length > 0) {
+    await sharp(path.join(ROOT, 'public', items[0].photos[0].full))
+      .resize(1200, 630, { fit: 'cover' })
+      .jpeg({ quality: 82 })
+      .toFile(path.join(ROOT, 'public', 'og.jpg'));
+  }
+
   // Remove derivatives that no longer belong to any source file.
   const keep = new Set(Object.values(nextCache).flatMap((e) => [path.basename(e.thumb), path.basename(e.full)]));
   for (const name of await fs.readdir(MEDIA_DIR)) {

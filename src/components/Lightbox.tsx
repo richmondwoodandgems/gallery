@@ -14,6 +14,15 @@ export default function Lightbox({ piece, onClose }: Props) {
 
   const step = useCallback((delta: number) => setIndex((i) => (i + delta + count) % count), [count]);
 
+  // Decode the neighboring photos ahead of time so next/prev feels instant.
+  useEffect(() => {
+    if (count < 2) return;
+    for (const delta of [1, -1]) {
+      const preload = new Image();
+      preload.src = asset(piece.photos[(index + delta + count) % count].full);
+    }
+  }, [index, count, piece]);
+
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose();
@@ -35,7 +44,8 @@ export default function Lightbox({ piece, onClose }: Props) {
       </button>
 
       <figure className="lb-stage" onClick={(event) => event.stopPropagation()}>
-        <img src={asset(photo.full)} alt={`${piece.title} (${index + 1} of ${count})`} />
+        {/* Keyed by src so the entrance animation replays on next/prev. */}
+        <img key={photo.full} src={asset(photo.full)} alt={`${piece.title} (${index + 1} of ${count})`} />
         <figcaption>
           <h2>{piece.title}</h2>
           {piece.description && <p>{piece.description}</p>}
