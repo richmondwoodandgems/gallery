@@ -1,23 +1,27 @@
 :root {
-  --bg: #f6f1e9;
-  --surface: #fffdf9;
-  --ink: #2b241d;
-  --ink-soft: #6d6053;
-  --line: #e2d7c6;
-  --accent: #7d5a3c;
-  --shadow: 0 1px 2px rgb(43 36 29 / 8%), 0 12px 28px rgb(43 36 29 / 8%);
-  --radius: 14px;
+  --bg: #fdfaf6;
+  --bg-wash: radial-gradient(120% 70% at 50% -10%, #fdeef0 0%, #fbf4ea 45%, #fdfaf6 100%);
+  --surface: #ffffff;
+  --ink: #4a3f3a;
+  --ink-soft: #8a7b74;
+  --line: #f0e4dc;
+  --accent: #c07a70;
+  --accent-soft: #fbeeeb;
+  --shadow: 0 1px 2px rgb(140 110 100 / 6%), 0 14px 32px rgb(140 110 100 / 10%);
+  --radius: 18px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17130f;
-    --surface: #211b16;
-    --ink: #f0e7db;
-    --ink-soft: #a8998a;
-    --line: #362c24;
-    --accent: #d0a87b;
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 14px 32px rgb(0 0 0 / 45%);
+    --bg: #2a2422;
+    --bg-wash: radial-gradient(120% 70% at 50% -10%, #3a2e2d 0%, #322a28 45%, #2a2422 100%);
+    --surface: #362e2c;
+    --ink: #f6ede7;
+    --ink-soft: #c2b0a8;
+    --line: #473c39;
+    --accent: #e8a89c;
+    --accent-soft: #453734;
+    --shadow: 0 1px 2px rgb(0 0 0 / 22%), 0 14px 32px rgb(0 0 0 / 26%);
   }
 }
 
@@ -28,6 +32,9 @@
 body {
   margin: 0;
   background: var(--bg);
+  background-image: var(--bg-wash);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.55;
@@ -102,6 +109,7 @@ body {
 
 .chip:hover {
   border-color: var(--accent);
+  background: var(--accent-soft);
   color: var(--ink);
 }
 
@@ -149,12 +157,13 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  box-shadow: 0 2px 4px rgb(140 110 100 / 8%), 0 20px 40px rgb(140 110 100 / 16%);
 }
 
 .card-frame {
   position: relative;
-  background: var(--line);
+  background: var(--accent-soft);
 }
 
 .card-frame img {
@@ -166,13 +175,15 @@ body {
 
 .badge {
   position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  background: rgb(0 0 0 / 62%);
-  color: #fff;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  background: rgb(255 255 255 / 88%);
+  color: #6b544e;
   font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
+  backdrop-filter: blur(4px);
 }
 
 .card-body {
@@ -218,7 +229,8 @@ body {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgb(12 9 7 / 92%);
+  background: rgb(74 63 58 / 82%);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,8 +273,13 @@ body {
 }
 
 .muted {
-  color: #a8998a;
+  color: var(--ink-soft);
   font-size: 0.85rem;
+}
+
+/* The lightbox sits on a dark scrim in both themes. */
+.lb-stage .muted {
+  color: #e4d7d2;
 }
 
 .lb-close,
