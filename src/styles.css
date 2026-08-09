@@ -259,12 +259,13 @@ body {
 .lb-close,
 .lb-nav {
   position: absolute;
-  background: rgb(255 255 255 / 12%);
+  background: rgb(30 22 18 / 55%);
   color: #fff;
   border: none;
   cursor: pointer;
   border-radius: 999px;
   line-height: 1;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
 }
 
 .lb-close {
@@ -309,7 +310,7 @@ body {
 
 .lb-close:hover,
 .lb-nav:hover {
-  background: rgb(255 255 255 / 26%);
+  background: rgb(30 22 18 / 78%);
 }
 
 /* ---------- story ---------- */
