@@ -27,7 +27,9 @@ const CACHE_FILE = path.join(MEDIA_DIR, '.cache.json');
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.tif', '.tiff']);
 const UNSUPPORTED_EXT = new Set(['.heic', '.heif', '.mov', '.mp4']);
 
-const THUMB_WIDTH = 800;
+// Grid cards run about 670px wide on a large screen, so the thumbnail is sized
+// for that at 2x pixel density rather than for a small tile.
+const THUMB_WIDTH = 1400;
 const FULL_WIDTH = 2000;
 
 /** Animated formats are passed through untouched so GIFs keep animating. */

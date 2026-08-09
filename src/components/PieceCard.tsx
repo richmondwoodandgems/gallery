@@ -6,19 +6,19 @@ interface Props {
   onOpen: () => void;
 }
 
+/**
+ * The grid is intentionally caption-free so the photographs carry the page.
+ * Titles and descriptions live in the lightbox instead.
+ */
 export default function PieceCard({ piece, onOpen }: Props) {
   const cover = piece.photos[0];
   const extras = piece.photos.length - 1;
 
   return (
-    <button type="button" className="card" onClick={onOpen}>
+    <button type="button" className="card" onClick={onOpen} aria-label={`View ${piece.title}`}>
       <div className="card-frame" style={{ aspectRatio: `${cover.width} / ${cover.height}` }}>
         <img src={asset(cover.thumb)} alt={piece.title} loading="lazy" decoding="async" />
-        {extras > 0 && <span className="badge">+{extras}</span>}
-      </div>
-      <div className="card-body">
-        <h2>{piece.title}</h2>
-        {piece.description && <p>{piece.description}</p>}
+        {extras > 0 && <span className="badge">{piece.photos.length} photos</span>}
       </div>
     </button>
   );

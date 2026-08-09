@@ -1,28 +1,21 @@
+/*
+ * The gallery is deliberately light-only. The photographs are bright, high-key
+ * shots on white marble, and a dark theme fights them — so no dark-mode block
+ * here, and color-scheme pins form controls and scrollbars to light too.
+ */
 :root {
-  --bg: #fdfaf6;
-  --bg-wash: radial-gradient(120% 70% at 50% -10%, #fdeef0 0%, #fbf4ea 45%, #fdfaf6 100%);
+  color-scheme: light;
+
+  --bg: #fffcf9;
+  --bg-wash: radial-gradient(115% 60% at 50% -5%, #fdf1f0 0%, #fdf7f0 45%, #fffcf9 100%);
   --surface: #ffffff;
-  --ink: #4a3f3a;
-  --ink-soft: #8a7b74;
-  --line: #f0e4dc;
+  --ink: #52463f;
+  --ink-soft: #92827a;
+  --line: #f3e8e0;
   --accent: #c07a70;
   --accent-soft: #fbeeeb;
-  --shadow: 0 1px 2px rgb(140 110 100 / 6%), 0 14px 32px rgb(140 110 100 / 10%);
+  --shadow: 0 1px 2px rgb(140 110 100 / 5%), 0 16px 36px rgb(140 110 100 / 9%);
   --radius: 18px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #2a2422;
-    --bg-wash: radial-gradient(120% 70% at 50% -10%, #3a2e2d 0%, #322a28 45%, #2a2422 100%);
-    --surface: #362e2c;
-    --ink: #f6ede7;
-    --ink-soft: #c2b0a8;
-    --line: #473c39;
-    --accent: #e8a89c;
-    --accent-soft: #453734;
-    --shadow: 0 1px 2px rgb(0 0 0 / 22%), 0 14px 32px rgb(0 0 0 / 26%);
-  }
 }
 
 * {
@@ -42,9 +35,9 @@ body {
 }
 
 .page {
-  max-width: 1180px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1.25rem 4rem;
+  padding: 0 1.5rem 4rem;
 }
 
 /* ---------- masthead ---------- */
@@ -122,17 +115,11 @@ body {
 /* ---------- grid ---------- */
 
 .grid {
-  column-count: 3;
-  column-gap: 1.25rem;
+  column-count: 2;
+  column-gap: 1.75rem;
 }
 
-@media (max-width: 900px) {
-  .grid {
-    column-count: 2;
-  }
-}
-
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   .grid {
     column-count: 1;
   }
@@ -142,28 +129,33 @@ body {
   display: block;
   width: 100%;
   break-inside: avoid;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1.75rem;
   padding: 0;
-  border: 1px solid var(--line);
+  border: none;
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
-  text-align: left;
   font: inherit;
   color: inherit;
   cursor: zoom-in;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 2px 4px rgb(140 110 100 / 8%), 0 20px 40px rgb(140 110 100 / 16%);
+  transform: translateY(-5px);
+  box-shadow: 0 2px 6px rgb(140 110 100 / 8%), 0 26px 50px rgb(140 110 100 / 16%);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .card-frame {
   position: relative;
   background: var(--accent-soft);
+  overflow: hidden;
 }
 
 .card-frame img {
@@ -171,6 +163,11 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .card-frame img {
+  transform: scale(1.03);
 }
 
 .badge {
@@ -184,22 +181,6 @@ body {
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   backdrop-filter: blur(4px);
-}
-
-.card-body {
-  padding: 0.85rem 1rem 1.1rem;
-}
-
-.card-body h2 {
-  margin: 0;
-  font-size: 1.02rem;
-  font-weight: 600;
-}
-
-.card-body p {
-  margin: 0.35rem 0 0;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
 }
 
 /* ---------- empty ---------- */
