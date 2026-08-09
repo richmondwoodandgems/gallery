@@ -57,11 +57,17 @@ async function walk(dir) {
   return out;
 }
 
-/** "Walnut River Board-2.jpg" -> { key: "walnut river board", order: 2 } */
+/**
+ * "Walnut River Board-2.jpg" -> { stem: "Walnut River Board", order: 2 }
+ *
+ * A numbered suffix only counts when a space or dash separates it (max two
+ * digits), so camera names like "IMG_8039" keep their digits instead of being
+ * split into a bogus piece + order — which would also merge unrelated uploads.
+ */
 function parseName(basename) {
   const stem = basename.replace(/\.[^.]+$/, '');
-  const match = stem.match(/^(.*?)[\s._-]*(\d{1,3})$/);
-  if (match && match[1].trim().length > 0) {
+  const match = stem.match(/^(.+?)[\s-]+(\d{1,2})$/);
+  if (match) {
     return { stem: match[1].trim(), order: Number(match[2]) };
   }
   return { stem: stem.trim(), order: 1 };
