@@ -7,13 +7,73 @@ interface Props {
   onClose: () => void;
 }
 
+/** Live state of a finger (or mouse) drag across the photo. */
+interface Drag {
+  id: number;
+  x: number;
+  y: number;
+  startedAt: number;
+  /** '?' until the first few pixels reveal the intent; 'off' hands it back to the browser. */
+  axis: '?' | 'x' | 'off';
+}
+
 export default function Lightbox({ piece, onClose }: Props) {
   const [index, setIndex] = useState(0);
   const count = piece.photos.length;
   const photo = piece.photos[index];
   const stripRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<Drag | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
 
   const step = useCallback((delta: number) => setIndex((i) => (i + delta + count) % count), [count]);
+
+  function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    // Secondary pointers mean a pinch-zoom; leave those to the browser.
+    if (count < 2 || !event.isPrimary) return;
+    dragRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY, startedAt: performance.now(), axis: '?' };
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || event.pointerId !== drag.id) return;
+
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+
+    if (drag.axis === '?') {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      // A mostly-vertical first move is a scroll or zoom, not a swipe.
+      drag.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'off';
+      if (drag.axis === 'x') {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setDragging(true);
+      }
+    }
+
+    if (drag.axis !== 'x') return;
+    setDragX(dx);
+  }
+
+  function onPointerEnd(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || event.pointerId !== drag.id) return;
+
+    const dx = event.clientX - drag.x;
+    const distance = Math.abs(dx);
+    const elapsed = performance.now() - drag.startedAt;
+    const width = event.currentTarget.clientWidth || 1;
+
+    // Either drag the photo well across, or flick it quickly.
+    const dragged = distance > Math.min(70, width * 0.18);
+    const flicked = distance > 24 && distance / elapsed > 0.45;
+
+    if (drag.axis === 'x' && (dragged || flicked)) step(dx < 0 ? 1 : -1);
+
+    dragRef.current = null;
+    setDragging(false);
+    setDragX(0);
+  }
 
   // Decode the neighboring photos ahead of time so next/prev feels instant.
   useEffect(() => {
@@ -61,9 +121,20 @@ export default function Lightbox({ piece, onClose }: Props) {
         onClick={(event) => event.stopPropagation()}
       >
         {/* The arrows anchor to the photo itself, not the caption or filmstrip. */}
-        <div className="lb-frame">
+        <div
+          className={dragging ? 'lb-frame lb-frame-dragging' : 'lb-frame'}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerEnd}
+          onPointerCancel={onPointerEnd}
+        >
           {/* Keyed by src so the entrance animation replays on next/prev. */}
-          <img key={photo.full} src={asset(photo.full)} alt={`${piece.title} (${index + 1} of ${count})`} />
+          <img
+            key={photo.full}
+            src={asset(photo.full)}
+            alt={`${piece.title} (${index + 1} of ${count})`}
+            style={dragX ? { transform: `translateX(${dragX}px)` } : undefined}
+          />
 
           {count > 1 && (
             <>

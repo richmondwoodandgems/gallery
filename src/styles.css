@@ -225,6 +225,9 @@ body {
   display: flex;
   justify-content: center;
   min-height: 0;
+  /* Horizontal drags are ours (swipe to page); the browser keeps pinch-zoom
+     so close-ups of the stones stay inspectable. */
+  touch-action: pan-y pinch-zoom;
 }
 
 .lb-frame img {
@@ -234,6 +237,14 @@ body {
   object-fit: contain;
   border-radius: 8px;
   animation: lb-rise 0.3s ease;
+  transition: transform 0.25s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* While a finger is down the photo tracks it exactly — no easing lag. */
+.lb-frame-dragging img {
+  transition: none;
 }
 
 /* A piece with several photos gives up image height to the filmstrip. */
@@ -317,6 +328,27 @@ body {
   }
   .lb-next {
     right: 0.25rem;
+  }
+}
+
+/*
+ * On touch devices the swipe replaces the arrows, and the filmstrip already
+ * shows where you are — so drop the overlay buttons and give the close
+ * button a full 44px target.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .lb-nav {
+    display: none;
+  }
+
+  .lb-close {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .lb-thumb {
+    min-width: 3.25rem;
+    min-height: 3.25rem;
   }
 }
 
