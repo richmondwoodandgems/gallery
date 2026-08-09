@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Generated from content/gallery on every build.
+public/media/
+src/data/manifest.json
