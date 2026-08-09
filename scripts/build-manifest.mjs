@@ -87,6 +87,20 @@ function titleize(stem) {
     .join(' ');
 }
 
+/**
+ * Text files are rendered with `white-space: pre-line`, so a line break in the
+ * file would show up on the page. Line-wrapping inside a paragraph is collapsed
+ * to spaces; a blank line still starts a new paragraph.
+ */
+function normalizeText(raw) {
+  return raw
+    .replace(/\r\n?/g, '\n')
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
+
 function idFor(collection, stem) {
   return createHash('sha1').update(`${collection}/${stem}`.toLowerCase()).digest('hex').slice(0, 12);
 }
@@ -186,7 +200,7 @@ async function main() {
     if (path.extname(file).toLowerCase() !== '.txt') continue;
     const collection = path.relative(CONTENT_DIR, path.dirname(file)).split(path.sep)[0] || '';
     const { stem } = parseName(path.basename(file));
-    descriptions.set(idFor(collection, stem), (await fs.readFile(file, 'utf8')).trim());
+    descriptions.set(idFor(collection, stem), normalizeText(await fs.readFile(file, 'utf8')));
   }
 
   const pieces = new Map();
@@ -238,7 +252,7 @@ async function main() {
 
   let about = '';
   try {
-    about = (await fs.readFile(path.join(ROOT, 'content', 'about.txt'), 'utf8')).trim();
+    about = normalizeText(await fs.readFile(path.join(ROOT, 'content', 'about.txt'), 'utf8'));
   } catch {
     /* optional */
   }
