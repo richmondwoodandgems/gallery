@@ -121,6 +121,55 @@ function idFor(key) {
   return createHash('sha1').update(key).digest('hex').slice(0, 12);
 }
 
+/** "A2" before "A10", and case never decides the order. */
+function byNaturalName(a, b) {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+}
+
+/**
+ * The descriptive part of a file name, before any ":view" suffix:
+ * "A1 Black Walnut:end1.jpeg" -> "A1 Black Walnut"
+ */
+function baseName(file) {
+  return path
+    .basename(file)
+    .replace(/\.[^.]+$/, '')
+    .split(':')[0]
+    .trim();
+}
+
+/**
+ * Folders are named for a catalog number ("A13"), but the wood is only spelled
+ * out in the file names inside ("A13 Hickory:top.jpeg"), so the title comes
+ * from the most common file name that starts with the folder's name. Folders
+ * holding nothing but camera names fall back to the folder name itself.
+ */
+function folderTitle(folder, files) {
+  const counts = new Map();
+  for (const file of files) {
+    const base = baseName(file);
+    if (!base || !base.toLowerCase().startsWith(folder.toLowerCase())) continue;
+    counts.set(base, (counts.get(base) ?? 0) + 1);
+  }
+  if (counts.size === 0) return folder;
+  // Most common wins; a tie goes to the more descriptive (longer) name.
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0][0];
+}
+
+/**
+ * The cover is the photo of the whole piece — the file with no ":view" suffix.
+ * The rest follow in natural order.
+ */
+function orderFolderPhotos(folder, files) {
+  const cover = files.find((file) => !path.basename(file).includes(':')) ?? files[0];
+  return [cover, ...files.filter((file) => file !== cover)];
+}
+
+/** Top-level photos order by their numbered suffix: Board.jpg, Board-2.jpg. */
+function orderLoosePhotos(files) {
+  return [...files].sort((a, b) => parseName(path.basename(a)).order - parseName(path.basename(b)).order);
+}
+
 async function readCache() {
   try {
     return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8'));
@@ -229,67 +278,69 @@ async function main() {
     descriptions.set(key, normalizeText(await fs.readFile(file, 'utf8')));
   }
 
-  const pieces = new Map();
-  const ensurePiece = (key, title) => {
-    if (!pieces.has(key)) {
-      pieces.set(key, {
-        id: idFor(key),
-        title: titleize(title),
-        description: descriptions.get(key) ?? '',
-        addedAt: 0,
-        photos: [],
-      });
-    }
-    return pieces.get(key);
-  };
-
   const imageFiles = [];
   for (const file of files) {
     const ext = path.extname(file).toLowerCase();
     if (UNSUPPORTED_EXT.has(ext)) skipped.push(path.relative(CONTENT_DIR, file));
     else if (IMAGE_EXT.has(ext)) imageFiles.push(file);
   }
-  // Natural sort so "photo-2" comes before "photo-10" inside folders.
-  imageFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  imageFiles.sort(byNaturalName);
 
-  let folderIndex = 0;
+  // Gather each piece's files before deciding its title and cover, since both
+  // depend on the whole set rather than on any one photo.
+  const groups = new Map();
   for (const file of imageFiles) {
     const { folder } = classify(file);
-    const stat = await fs.stat(file);
-
-    let derived;
-    try {
-      derived = await processImage(file, stat, cache, nextCache);
-    } catch (err) {
-      skipped.push(`${path.relative(CONTENT_DIR, file)} (${err.message})`);
-      continue;
-    }
-
-    let piece;
-    let order;
-    if (folder === null) {
-      // Top-level photo: cover (order 1) or a numbered companion.
-      const { stem, order: n } = parseName(path.basename(file));
-      piece = ensurePiece(keyFor(stem), stem);
-      order = n;
-    } else {
-      // Folder photo: always sorts after the top-level cover and companions,
-      // in natural filename order.
-      piece = ensurePiece(keyFor(folder), folder);
-      order = 1000 + folderIndex++;
-    }
-
-    piece.addedAt = Math.max(piece.addedAt, stat.mtimeMs);
-    piece.photos.push({ order, ...derived });
+    const key = folder ? keyFor(folder) : keyFor(parseName(path.basename(file)).stem);
+    if (!groups.has(key)) groups.set(key, { key, folder, files: [] });
+    groups.get(key).files.push(file);
   }
 
-  const items = [...pieces.values()]
-    .map((piece) => ({
-      ...piece,
-      addedAt: new Date(piece.addedAt).toISOString(),
-      photos: piece.photos.sort((a, b) => a.order - b.order),
-    }))
-    .sort((a, b) => b.addedAt.localeCompare(a.addedAt) || a.title.localeCompare(b.title));
+  const items = [];
+  const duplicates = [];
+
+  for (const group of [...groups.values()].sort((a, b) => byNaturalName(a.key, b.key))) {
+    const { key, folder, files: groupFiles } = group;
+
+    // Identical bytes uploaded twice (often the same shot as .JPG and .jpeg)
+    // would otherwise show as two photos of the same piece.
+    const seen = new Map();
+    const unique = [];
+    for (const file of groupFiles) {
+      const digest = createHash('sha1').update(await fs.readFile(file)).digest('hex');
+      if (seen.has(digest)) {
+        duplicates.push(`${path.relative(CONTENT_DIR, file)} (same image as ${seen.get(digest)})`);
+        continue;
+      }
+      seen.set(digest, path.basename(file));
+      unique.push(file);
+    }
+
+    const ordered = folder ? orderFolderPhotos(folder, unique) : orderLoosePhotos(unique);
+    const title = folder ? folderTitle(folder, unique) : parseName(path.basename(unique[0])).stem;
+
+    const photos = [];
+    let addedAt = 0;
+    for (const [order, file] of ordered.entries()) {
+      const stat = await fs.stat(file);
+      try {
+        photos.push({ order, ...(await processImage(file, stat, cache, nextCache)) });
+      } catch (err) {
+        skipped.push(`${path.relative(CONTENT_DIR, file)} (${err.message})`);
+        continue;
+      }
+      addedAt = Math.max(addedAt, stat.mtimeMs);
+    }
+    if (photos.length === 0) continue;
+
+    items.push({
+      id: idFor(key),
+      title: titleize(title),
+      description: descriptions.get(key) ?? '',
+      addedAt: new Date(addedAt).toISOString(),
+      photos,
+    });
+  }
 
   let about = '';
   try {
@@ -324,6 +375,10 @@ async function main() {
   }
 
   console.log(`Gallery: ${items.length} piece(s), ${Object.keys(nextCache).length} photo(s).`);
+  if (duplicates.length) {
+    console.warn('\nIgnored duplicate uploads:');
+    for (const d of duplicates) console.warn(`  - ${d}`);
+  }
   if (skipped.length) {
     console.warn('\nSkipped files (convert these to JPG or PNG and re-upload):');
     for (const s of skipped) console.warn(`  - ${s}`);

@@ -20,10 +20,15 @@ src/                     React + TypeScript front end
 ```
 
 Photos are grouped into "pieces" by name: a top-level `Board.jpg` is the piece's
-cover, and a folder named `Board/` holds any additional photos of it (file names
-inside don't matter — they sort naturally). A folder with no matching cover photo
-is a piece on its own, titled after the folder. An optional `Board.txt` (top-level
-or inside the folder) supplies the description.
+cover, and a folder named `Board/` holds any additional photos of it. A folder with
+no matching cover photo is a piece on its own. An optional `Board.txt` (top-level or
+inside the folder) supplies the description.
+
+Inside a folder, a colon separates the piece from the view — `A13 Hickory:top.jpeg`.
+The title is the most common pre-colon name that starts with the folder name (so
+folder `A13` yields "A13 Hickory"), and the cover is the one photo with no colon.
+Pieces are ordered by natural name sort, so `A2` precedes `A10`; byte-identical
+uploads within a piece are collapsed to one photo.
 
 Derivatives are cached in `public/media/.cache.json` and keyed by source size and mtime,
 so a rebuild only reprocesses photos that actually changed.

@@ -49,6 +49,27 @@ hand, type the folder name and a `/` in the file-name box and GitHub creates the
 Extra photos inside a folder show in A-to-Z order of their file names, so name them
 `1.jpg`, `2.jpg`, `3.jpg` if you care about the order.
 
+### The way the catalog is named now
+
+The pieces uploaded so far use a folder per catalog number, with the wood named inside:
+
+```
+gallery/
+  A13/
+      A13 Hickory.jpeg            <- cover: no colon, so this is the whole piece
+      A13 Hickory:top.jpeg        <- ":something" marks a detail shot
+      A13 Hickory:end1.jpeg
+      A13 Hickory:end2.jpeg
+      A13 Hickory:winebottle.jpeg
+```
+
+Two things follow from that, automatically:
+
+- **The caption comes from the file names, not the folder.** That piece is titled
+  "A13 Hickory" even though the folder is just `A13`.
+- **The photo without a colon is the cover.** If every photo in the folder has a
+  colon, the first one alphabetically is used instead.
+
 *(A folder without a matching cover photo also works — the folder name becomes the
 caption and the first photo inside becomes the cover.)*
 
@@ -89,8 +110,12 @@ matched. The website updates a couple of minutes later.
 - **Big photos are fine.** The site automatically makes smaller copies so pages load fast.
   You never need to resize anything.
 - **Animated GIFs work** and keep animating.
-- **Newest pieces appear first** in the gallery.
-- Don't use the characters `/` `\` `:` `*` `?` `"` `<` `>` `|` in file names.
+- **Pieces appear in name order**, counting numbers properly — `A2` comes before
+  `A10`, not after it. Naming a new piece `A30` puts it right after `A29`.
+- **The same photo uploaded twice is only shown once**, even if one copy ends in
+  `.JPG` and the other in `.jpeg`.
+- A colon in a file name separates the piece from the view (`A13 Hickory:top.jpeg`).
+  Avoid `/` `\` `*` `?` `"` `<` `>` `|` entirely.
 
 ---
 
