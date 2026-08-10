@@ -93,25 +93,20 @@ body {
 /* ---------- grid ---------- */
 
 /*
- * Row-major grid, not column masonry: the catalog is numbered, and people
- * scan left-to-right, so A1 and A2 must sit beside each other.
+ * Justified rows (the classic photo-wall layout): each row fills the width
+ * exactly and heights vary slightly per row, so the catalog reads tightly
+ * left-to-right in order — A1 beside A2 — with no ragged gaps.
  */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.75rem;
-  align-items: start;
-}
-
-@media (max-width: 720px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+.jrow {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .card {
   display: block;
-  width: 100%;
+  flex: 0 0 auto;
+  height: 100%;
   margin: 0;
   padding: 0;
   border: none;
@@ -139,6 +134,7 @@ body {
   position: relative;
   background: var(--accent-soft);
   overflow: hidden;
+  height: 100%;
 }
 
 .card-frame img {

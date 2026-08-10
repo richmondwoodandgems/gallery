@@ -33,7 +33,8 @@ A13/
 The title is the most common pre-colon file name that starts with the folder name —
 folders are catalog numbers (`A13`) while the files record the wood, so `A13` yields
 "A13 Hickory". Folders holding only camera names fall back to the folder name.
-Pieces sort by natural name (`A2` before `A10`); byte-identical uploads within a
+The grid is a justified photo wall (each row fills the width exactly, laid out by
+JustifiedGrid from cover aspect ratios). Pieces sort by natural name (`A2` before `A10`); byte-identical uploads within a
 piece are collapsed to one photo.
 
 Derivatives are cached in `public/media/.cache.json`, keyed by a hash of the source

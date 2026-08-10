@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import manifestData from './data/manifest.json';
 import Lightbox from './components/Lightbox';
-import PieceCard from './components/PieceCard';
+import JustifiedGrid from './components/JustifiedGrid';
 import EmptyState from './components/EmptyState';
 import type { Manifest, Piece } from './types';
 
@@ -50,15 +50,7 @@ export default function App() {
       </header>
 
       <main>
-        {manifest.items.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className="grid">
-            {manifest.items.map((piece) => (
-              <PieceCard key={piece.id} piece={piece} onOpen={() => open(piece)} />
-            ))}
-          </div>
-        )}
+        {manifest.items.length === 0 ? <EmptyState /> : <JustifiedGrid items={manifest.items} onOpen={open} />}
       </main>
 
       {manifest.about && <section className="story">{manifest.about}</section>}
