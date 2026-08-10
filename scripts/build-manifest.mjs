@@ -5,16 +5,14 @@
  * Nobody has to edit JSON: drop image files into content/gallery (optionally
  * inside a subfolder to make a collection) and this script does the rest.
  *
- * Naming conventions:
- *   "Walnut River Board.jpg"     -> a piece titled "Walnut River Board"; this
- *                                   top-level photo is the piece's cover
- *   "Walnut River Board-2.jpg"   -> another photo of that same piece
- *   "Walnut River Board/"        -> folder of additional photos of that piece;
- *                                   file names inside do not matter
- *   "Walnut River Board.txt"     -> optional description (also honored as any
- *                                   .txt inside the piece's folder)
- *   A folder with no matching top-level photo is a piece on its own: the
- *   folder name is the title and its first photo (by name) is the cover.
+ * One folder per piece. Inside a folder:
+ *   "<name>.jpg"          -> the key photo, shown in the gallery grid
+ *   "<name>:<view>.jpg"   -> another view of the piece ("A13 Hickory:top.jpg")
+ *   "<anything>.txt"      -> optional description, shown alongside the photos
+ *
+ * The title comes from the file names rather than the folder, because the
+ * folder is a catalog number ("A13") while the files name the wood ("A13
+ * Hickory"). Loose photos sitting outside a folder are reported and ignored.
  */
 
 import { createHash } from 'node:crypto';
@@ -55,22 +53,6 @@ async function walk(dir) {
     else out.push(full);
   }
   return out;
-}
-
-/**
- * "Walnut River Board-2.jpg" -> { stem: "Walnut River Board", order: 2 }
- *
- * A numbered suffix only counts when a space or dash separates it (max two
- * digits), so camera names like "IMG_8039" keep their digits instead of being
- * split into a bogus piece + order — which would also merge unrelated uploads.
- */
-function parseName(basename) {
-  const stem = basename.replace(/\.[^.]+$/, '');
-  const match = stem.match(/^(.+?)[\s-]+(\d{1,2})$/);
-  if (match) {
-    return { stem: match[1].trim(), order: Number(match[2]) };
-  }
-  return { stem: stem.trim(), order: 1 };
 }
 
 /** Words left lowercase mid-title so casual file names still read well. */
@@ -157,17 +139,15 @@ function folderTitle(folder, files) {
 }
 
 /**
- * The cover is the photo of the whole piece — the file with no ":view" suffix.
- * The rest follow in natural order.
+ * The key photo leads: the one with no ":view" suffix. A folder named for the
+ * piece itself ("Board/board.jpg") wins over any other colon-free file, so an
+ * odd name inside cannot displace it. Remaining views follow in natural order.
  */
 function orderFolderPhotos(folder, files) {
-  const cover = files.find((file) => !path.basename(file).includes(':')) ?? files[0];
-  return [cover, ...files.filter((file) => file !== cover)];
-}
-
-/** Top-level photos order by their numbered suffix: Board.jpg, Board-2.jpg. */
-function orderLoosePhotos(files) {
-  return [...files].sort((a, b) => parseName(path.basename(a)).order - parseName(path.basename(b)).order);
+  const plain = files.filter((file) => !path.basename(file).includes(':'));
+  const key =
+    plain.find((file) => baseName(file).toLowerCase() === folder.toLowerCase()) ?? plain[0] ?? files[0];
+  return [key, ...files.filter((file) => file !== key)];
 }
 
 async function readCache() {
@@ -268,30 +248,35 @@ async function main() {
     return segments.length === 1 ? { folder: null } : { folder: segments[0] };
   };
 
-  // A description can live at the top level ("Board.txt") or be any .txt
-  // dropped inside the piece's folder.
+  // Any .txt dropped inside a piece's folder describes it. If someone leaves
+  // more than one, the first by name wins so the result is never arbitrary.
   const descriptions = new Map();
-  for (const file of files) {
-    if (path.extname(file).toLowerCase() !== '.txt') continue;
+  const textFiles = files.filter((file) => path.extname(file).toLowerCase() === '.txt').sort(byNaturalName);
+  for (const file of textFiles) {
     const { folder } = classify(file);
-    const key = folder ? keyFor(folder) : keyFor(parseName(path.basename(file)).stem);
+    if (!folder) continue;
+    const key = keyFor(folder);
+    if (descriptions.has(key)) continue;
     descriptions.set(key, normalizeText(await fs.readFile(file, 'utf8')));
   }
 
   const imageFiles = [];
+  const loose = [];
   for (const file of files) {
     const ext = path.extname(file).toLowerCase();
     if (UNSUPPORTED_EXT.has(ext)) skipped.push(path.relative(CONTENT_DIR, file));
-    else if (IMAGE_EXT.has(ext)) imageFiles.push(file);
+    else if (!IMAGE_EXT.has(ext)) continue;
+    else if (classify(file).folder === null) loose.push(path.basename(file));
+    else imageFiles.push(file);
   }
   imageFiles.sort(byNaturalName);
 
-  // Gather each piece's files before deciding its title and cover, since both
-  // depend on the whole set rather than on any one photo.
+  // Gather each piece's files before deciding its title and key photo, since
+  // both depend on the whole set rather than on any one photo.
   const groups = new Map();
   for (const file of imageFiles) {
     const { folder } = classify(file);
-    const key = folder ? keyFor(folder) : keyFor(parseName(path.basename(file)).stem);
+    const key = keyFor(folder);
     if (!groups.has(key)) groups.set(key, { key, folder, files: [] });
     groups.get(key).files.push(file);
   }
@@ -316,8 +301,8 @@ async function main() {
       unique.push(file);
     }
 
-    const ordered = folder ? orderFolderPhotos(folder, unique) : orderLoosePhotos(unique);
-    const title = folder ? folderTitle(folder, unique) : parseName(path.basename(unique[0])).stem;
+    const ordered = orderFolderPhotos(folder, unique);
+    const title = folderTitle(folder, unique);
 
     const photos = [];
     let addedAt = 0;
@@ -375,6 +360,10 @@ async function main() {
   }
 
   console.log(`Gallery: ${items.length} piece(s), ${Object.keys(nextCache).length} photo(s).`);
+  if (loose.length) {
+    console.warn('\nIgnored photos that are not inside a folder (every piece needs its own folder):');
+    for (const l of loose) console.warn(`  - ${l}`);
+  }
   if (duplicates.length) {
     console.warn('\nIgnored duplicate uploads:');
     for (const d of duplicates) console.warn(`  - ${d}`);

@@ -269,6 +269,17 @@ body {
   font-size: 0.95rem;
 }
 
+/* The description is set in the title's serif so the two read as one label. */
+.lb-desc {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  max-width: 40rem;
+  margin-inline: auto;
+  white-space: pre-line;
+  color: #ece2d9;
+}
+
 .muted {
   color: var(--ink-soft);
   font-size: 0.85rem;

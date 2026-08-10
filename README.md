@@ -19,16 +19,22 @@ src/                     React + TypeScript front end
 .github/workflows/       builds and deploys to GitHub Pages on every push to main
 ```
 
-Photos are grouped into "pieces" by name: a top-level `Board.jpg` is the piece's
-cover, and a folder named `Board/` holds any additional photos of it. A folder with
-no matching cover photo is a piece on its own. An optional `Board.txt` (top-level or
-inside the folder) supplies the description.
+One folder per piece; loose photos in `content/gallery` are reported and ignored.
+Inside a folder, a colon separates the piece from the view:
 
-Inside a folder, a colon separates the piece from the view — `A13 Hickory:top.jpeg`.
-The title is the most common pre-colon name that starts with the folder name (so
-folder `A13` yields "A13 Hickory"), and the cover is the one photo with no colon.
-Pieces are ordered by natural name sort, so `A2` precedes `A10`; byte-identical
-uploads within a piece are collapsed to one photo.
+```
+A13/
+    A13 Hickory.jpeg          key photo (no colon) — the grid cover
+    A13 Hickory:top.jpeg      additional views
+    A13 Hickory:end1.jpeg
+    A13 Hickory.txt           optional description (any .txt in the folder)
+```
+
+The title is the most common pre-colon file name that starts with the folder name —
+folders are catalog numbers (`A13`) while the files record the wood, so `A13` yields
+"A13 Hickory". Folders holding only camera names fall back to the folder name.
+Pieces sort by natural name (`A2` before `A10`); byte-identical uploads within a
+piece are collapsed to one photo.
 
 Derivatives are cached in `public/media/.cache.json` and keyed by source size and mtime,
 so a rebuild only reprocesses photos that actually changed.

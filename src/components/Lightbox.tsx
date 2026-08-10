@@ -150,7 +150,7 @@ export default function Lightbox({ piece, onClose }: Props) {
 
         <figcaption>
           <h2>{piece.title}</h2>
-          {piece.description && <p>{piece.description}</p>}
+          {piece.description && <p className="lb-desc">{piece.description}</p>}
           {count > 1 && (
             <p className="muted">
               {index + 1} of {count}

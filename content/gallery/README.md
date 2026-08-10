@@ -1,10 +1,18 @@
-# Put photos in this folder
+# One folder per piece
 
-Drag pictures straight into this folder on GitHub. The website rebuilds itself.
+Every piece of work gets its own folder in here. Photos left loose in this folder are
+ignored by the website.
 
-- **The file name becomes the caption.** `Walnut River Board.jpg` shows as "Walnut River Board".
-- **More photos of the same piece?** Make a folder with the same name (`Walnut River Board`)
-  and put the extra photos inside — their file names don't matter.
-- **Want a longer description?** Add a text file with the same name: `Walnut River Board.txt`.
+```
+A13/
+    A13 Hickory.jpeg          <- the main photo (no colon) — shown in the gallery
+    A13 Hickory:top.jpeg      <- other views: <name>:<view>
+    A13 Hickory:end1.jpeg
+    A13 Hickory.txt           <- optional description
+```
 
-Full instructions with pictures: see `HOW-TO-ADD-PHOTOS.md` at the top of the repository.
+The caption comes from the **file** names, not the folder name — the folder above is
+`A13`, but the piece is titled "A13 Hickory".
+
+Step-by-step instructions with pictures: see `HOW-TO-ADD-PHOTOS.md` at the top of the
+repository.
