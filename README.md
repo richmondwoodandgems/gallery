@@ -36,8 +36,13 @@ folders are catalog numbers (`A13`) while the files record the wood, so `A13` yi
 Pieces sort by natural name (`A2` before `A10`); byte-identical uploads within a
 piece are collapsed to one photo.
 
-Derivatives are cached in `public/media/.cache.json` and keyed by source size and mtime,
-so a rebuild only reprocesses photos that actually changed.
+Derivatives are cached in `public/media/.cache.json`, keyed by a hash of the source
+bytes, so a rebuild only reprocesses photos that actually changed — including in CI,
+where the cache is restored via actions/cache. Each photo gets three renditions
+(700/1400/2000px webp) served via srcset; GIFs pass through untouched.
+
+Each piece has a stable share URL in the hash (`/#a13`, from the folder name), which
+also lets the phone back button close the lightbox instead of leaving the site.
 
 ## Local development
 

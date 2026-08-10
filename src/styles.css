@@ -92,22 +92,27 @@ body {
 
 /* ---------- grid ---------- */
 
+/*
+ * Row-major grid, not column masonry: the catalog is numbered, and people
+ * scan left-to-right, so A1 and A2 must sit beside each other.
+ */
 .grid {
-  column-count: 2;
-  column-gap: 1.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+  align-items: start;
 }
 
 @media (max-width: 720px) {
   .grid {
-    column-count: 1;
+    grid-template-columns: 1fr;
   }
 }
 
 .card {
   display: block;
   width: 100%;
-  break-inside: avoid;
-  margin: 0 0 1.75rem;
+  margin: 0;
   padding: 0;
   border: none;
   border-radius: var(--radius);

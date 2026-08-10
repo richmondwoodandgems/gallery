@@ -92,6 +92,8 @@ is gone, GitHub removes the folder.
 - **Big photos are fine.** The site automatically makes smaller copies so pages load fast.
   You never need to resize anything.
 - **Animated GIFs work** and keep animating.
+- **Every piece has its own link.** Open a piece and copy the address bar — something
+  like `.../gallery/#a13` — and that link takes people straight to that piece.
 - **Pieces appear in folder-name order**, counting numbers properly — `A2` comes before
   `A10`, not after it. Naming a new folder `A30` puts it right after `A29`.
 - **The same photo uploaded twice is only shown once**, even if one copy ends in `.JPG`

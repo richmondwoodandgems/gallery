@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import manifestData from './data/manifest.json';
 import Lightbox from './components/Lightbox';
 import PieceCard from './components/PieceCard';
@@ -7,8 +7,37 @@ import type { Manifest, Piece } from './types';
 
 const manifest = manifestData as Manifest;
 
+const bySlug = (slug: string) => manifest.items.find((i) => i.slug === slug) ?? null;
+
+/**
+ * The open piece lives in the URL hash (/#a13) so pieces can be shared by
+ * link, and so the phone back button closes the lightbox instead of leaving
+ * the site.
+ */
 export default function App() {
-  const [openPiece, setOpenPiece] = useState<Piece | null>(null);
+  const [openPiece, setOpenPiece] = useState<Piece | null>(() => bySlug(window.location.hash.slice(1)));
+
+  useEffect(() => {
+    const onPopState = () => setOpenPiece(bySlug(window.location.hash.slice(1)));
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const open = useCallback((piece: Piece) => {
+    history.pushState({ lightbox: true }, '', `#${piece.slug}`);
+    setOpenPiece(piece);
+  }, []);
+
+  const close = useCallback(() => {
+    // Opened here: step back to the gallery entry. Arrived by direct link:
+    // there is nothing behind us on this site, so strip the hash in place.
+    if (history.state?.lightbox) {
+      history.back();
+    } else {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      setOpenPiece(null);
+    }
+  }, []);
 
   return (
     <div className="page">
@@ -26,7 +55,7 @@ export default function App() {
         ) : (
           <div className="grid">
             {manifest.items.map((piece) => (
-              <PieceCard key={piece.id} piece={piece} onOpen={() => setOpenPiece(piece)} />
+              <PieceCard key={piece.id} piece={piece} onOpen={() => open(piece)} />
             ))}
           </div>
         )}
@@ -39,7 +68,7 @@ export default function App() {
         <p className="muted">© {new Date().getFullYear()} Richmond Wood &amp; Gems</p>
       </footer>
 
-      {openPiece && <Lightbox piece={openPiece} onClose={() => setOpenPiece(null)} />}
+      {openPiece && <Lightbox piece={openPiece} onClose={close} />}
     </div>
   );
 }

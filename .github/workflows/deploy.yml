@@ -28,6 +28,15 @@ jobs:
 
       - run: npm ci
 
+      # Derivatives are fingerprinted by source-content hash, so a warm cache
+      # means only new or changed photos are reprocessed.
+      - name: Cache processed media
+        uses: actions/cache@v4
+        with:
+          path: public/media
+          key: media-${{ hashFiles('content/gallery/**') }}
+          restore-keys: media-
+
       - name: Build site
         env:
           BASE_PATH: /${{ github.event.repository.name }}/

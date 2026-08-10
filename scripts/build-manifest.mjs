@@ -30,9 +30,11 @@ const CACHE_FILE = path.join(MEDIA_DIR, '.cache.json');
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.tif', '.tiff']);
 const UNSUPPORTED_EXT = new Set(['.heic', '.heif', '.mov', '.mp4']);
 
-// Grid cards run about 670px wide on a large screen, so the thumbnail is sized
-// for that at 2x pixel density rather than for a small tile.
+// Grid cards run about 670px wide on a large screen. The large thumb covers
+// that at 2x pixel density; the small one serves phones and 1x screens via
+// srcset, and doubles as the filmstrip thumbnail.
 const THUMB_WIDTH = 1400;
+const THUMB_SMALL_WIDTH = 700;
 const FULL_WIDTH = 2000;
 
 /** Animated formats are passed through untouched so GIFs keep animating. */
@@ -160,20 +162,23 @@ async function readCache() {
 
 /**
  * Renders thumb + full derivatives for one source image, reusing previous
- * output when the source file has not changed since the last build.
+ * output when the source content has not changed since the last build.
+ *
+ * The fingerprint is content-based (not mtime), so the derivative cache
+ * survives CI, where every checkout rewrites file timestamps.
  */
-async function processImage(srcPath, stat, cache, nextCache) {
+async function processImage(srcPath, digest, cache, nextCache) {
   const ext = path.extname(srcPath).toLowerCase();
   const rel = path.relative(CONTENT_DIR, srcPath);
   const fingerprint = createHash('sha1')
-    .update(`${rel}:${stat.size}:${Math.floor(stat.mtimeMs)}:${THUMB_WIDTH}:${FULL_WIDTH}`)
+    .update(`${digest}:${THUMB_WIDTH}:${THUMB_SMALL_WIDTH}:${FULL_WIDTH}`)
     .digest('hex')
     .slice(0, 16);
 
   const cached = cache[rel];
   if (cached && cached.fingerprint === fingerprint) {
     const stillThere = await Promise.all(
-      [cached.thumb, cached.full].map((f) =>
+      [cached.thumb, cached.thumbSmall, cached.full].map((f) =>
         fs.access(path.join(MEDIA_DIR, path.basename(f))).then(
           () => true,
           () => false,
@@ -193,6 +198,7 @@ async function processImage(srcPath, stat, cache, nextCache) {
     const entry = {
       fingerprint,
       thumb: `media/${name}`,
+      thumbSmall: `media/${name}`,
       full: `media/${name}`,
       width: meta.width ?? 1,
       height: meta.pageHeight ?? meta.height ?? 1,
@@ -205,6 +211,7 @@ async function processImage(srcPath, stat, cache, nextCache) {
   const image = sharp(srcPath, { failOn: 'none' }).rotate();
   const meta = await image.metadata();
   const thumbName = `${fingerprint}-t.webp`;
+  const thumbSmallName = `${fingerprint}-s.webp`;
   const fullName = `${fingerprint}-f.webp`;
 
   await image
@@ -215,6 +222,12 @@ async function processImage(srcPath, stat, cache, nextCache) {
 
   await image
     .clone()
+    .resize({ width: THUMB_SMALL_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 75 })
+    .toFile(path.join(MEDIA_DIR, thumbSmallName));
+
+  await image
+    .clone()
     .resize({ width: FULL_WIDTH, withoutEnlargement: true })
     .webp({ quality: 82 })
     .toFile(path.join(MEDIA_DIR, fullName));
@@ -222,6 +235,7 @@ async function processImage(srcPath, stat, cache, nextCache) {
   const entry = {
     fingerprint,
     thumb: `media/${thumbName}`,
+    thumbSmall: `media/${thumbSmallName}`,
     full: `media/${fullName}`,
     width: meta.width ?? 1,
     height: meta.height ?? 1,
@@ -288,9 +302,11 @@ async function main() {
     const { key, folder, files: groupFiles } = group;
 
     // Identical bytes uploaded twice (often the same shot as .JPG and .jpeg)
-    // would otherwise show as two photos of the same piece.
+    // would otherwise show as two photos of the same piece. The digest also
+    // fingerprints the derivative cache, so it is computed exactly once.
     const seen = new Map();
     const unique = [];
+    const digests = new Map();
     for (const file of groupFiles) {
       const digest = createHash('sha1').update(await fs.readFile(file)).digest('hex');
       if (seen.has(digest)) {
@@ -298,6 +314,7 @@ async function main() {
         continue;
       }
       seen.set(digest, path.basename(file));
+      digests.set(file, digest);
       unique.push(file);
     }
 
@@ -307,19 +324,20 @@ async function main() {
     const photos = [];
     let addedAt = 0;
     for (const [order, file] of ordered.entries()) {
-      const stat = await fs.stat(file);
       try {
-        photos.push({ order, ...(await processImage(file, stat, cache, nextCache)) });
+        photos.push({ order, ...(await processImage(file, digests.get(file), cache, nextCache)) });
       } catch (err) {
         skipped.push(`${path.relative(CONTENT_DIR, file)} (${err.message})`);
         continue;
       }
-      addedAt = Math.max(addedAt, stat.mtimeMs);
+      addedAt = Math.max(addedAt, (await fs.stat(file)).mtimeMs);
     }
     if (photos.length === 0) continue;
 
     items.push({
       id: idFor(key),
+      // The slug is the piece's stable share URL: /#a13
+      slug: key.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || idFor(key),
       title: titleize(title),
       description: descriptions.get(key) ?? '',
       addedAt: new Date(addedAt).toISOString(),
@@ -343,17 +361,19 @@ async function main() {
   await fs.writeFile(path.join(DATA_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await fs.writeFile(CACHE_FILE, JSON.stringify(nextCache));
 
-  // Social-preview image (index.html og:image): newest piece, cropped to the
+  // Social-preview image (index.html og:image): first piece, cropped to the
   // 1200x630 Open Graph frame, as JPEG for link-unfurler compatibility.
+  // The apple-touch-icon (home-screen bookmark) comes from the same photo.
   if (items.length > 0) {
-    await sharp(path.join(ROOT, 'public', items[0].photos[0].full))
-      .resize(1200, 630, { fit: 'cover' })
-      .jpeg({ quality: 82 })
-      .toFile(path.join(ROOT, 'public', 'og.jpg'));
+    const lead = path.join(ROOT, 'public', items[0].photos[0].full);
+    await sharp(lead).resize(1200, 630, { fit: 'cover' }).jpeg({ quality: 82 }).toFile(path.join(ROOT, 'public', 'og.jpg'));
+    await sharp(lead).resize(180, 180, { fit: 'cover' }).png().toFile(path.join(ROOT, 'public', 'apple-touch-icon.png'));
   }
 
   // Remove derivatives that no longer belong to any source file.
-  const keep = new Set(Object.values(nextCache).flatMap((e) => [path.basename(e.thumb), path.basename(e.full)]));
+  const keep = new Set(
+    Object.values(nextCache).flatMap((e) => [path.basename(e.thumb), path.basename(e.thumbSmall), path.basename(e.full)]),
+  );
   for (const name of await fs.readdir(MEDIA_DIR)) {
     if (name.startsWith('.') || keep.has(name)) continue;
     await fs.rm(path.join(MEDIA_DIR, name), { force: true });

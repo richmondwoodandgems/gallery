@@ -7,3 +7,4 @@ dist/
 public/media/
 public/og.jpg
 src/data/manifest.json
+public/apple-touch-icon.png

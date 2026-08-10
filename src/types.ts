@@ -1,6 +1,7 @@
 export interface Photo {
   order: number;
   thumb: string;
+  thumbSmall: string;
   full: string;
   width: number;
   height: number;
@@ -9,6 +10,7 @@ export interface Photo {
 
 export interface Piece {
   id: string;
+  slug: string;
   title: string;
   description: string;
   addedAt: string;

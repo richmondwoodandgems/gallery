@@ -22,11 +22,21 @@ export default function Lightbox({ piece, onClose }: Props) {
   const count = piece.photos.length;
   const photo = piece.photos[index];
   const stripRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const dragRef = useRef<Drag | null>(null);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
 
   const step = useCallback((delta: number) => setIndex((i) => (i + delta + count) % count), [count]);
+
+  // The dialog owns keyboard focus while open: focus moves to the close
+  // button on open and returns to the card that opened it on close.
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeRef.current?.focus();
+    return () => opener?.focus();
+  }, []);
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     // Secondary pointers mean a pinch-zoom; leave those to the browser.
@@ -101,6 +111,20 @@ export default function Lightbox({ piece, onClose }: Props) {
       if (event.key === 'Escape') onClose();
       else if (event.key === 'ArrowRight') step(1);
       else if (event.key === 'ArrowLeft') step(-1);
+      else if (event.key === 'Tab') {
+        // Keep Tab inside the dialog; every focusable in it is a button.
+        const buttons = dialogRef.current?.querySelectorAll<HTMLButtonElement>('button');
+        if (!buttons?.length) return;
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
@@ -111,8 +135,8 @@ export default function Lightbox({ piece, onClose }: Props) {
   }, [onClose, step]);
 
   return (
-    <div className="lightbox" role="dialog" aria-modal="true" aria-label={piece.title} onClick={onClose}>
-      <button type="button" className="lb-close" onClick={onClose} aria-label="Close">
+    <div ref={dialogRef} className="lightbox" role="dialog" aria-modal="true" aria-label={piece.title} onClick={onClose}>
+      <button ref={closeRef} type="button" className="lb-close" onClick={onClose} aria-label="Close">
         ×
       </button>
 
@@ -170,7 +194,7 @@ export default function Lightbox({ piece, onClose }: Props) {
                 aria-label={`Photo ${i + 1} of ${count}`}
                 onClick={() => setIndex(i)}
               >
-                <img src={asset(thumb.thumb)} alt="" loading="lazy" decoding="async" />
+                <img src={asset(thumb.thumbSmall)} alt="" loading="lazy" decoding="async" />
               </button>
             ))}
           </div>
