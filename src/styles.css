@@ -269,14 +269,19 @@ body {
   font-size: 0.95rem;
 }
 
-/* The description is set in the title's serif so the two read as one label. */
-.lb-desc {
+/*
+ * The description is set in the title's serif so the two read as one label.
+ * Selector matches `.lb-stage figcaption p` so the auto margins that center
+ * this block are not overridden by it.
+ */
+.lb-stage figcaption .lb-desc {
   font-family: var(--serif);
   font-size: 1.15rem;
   line-height: 1.5;
   max-width: 40rem;
-  margin-inline: auto;
+  margin: 0.5rem auto 0;
   white-space: pre-line;
+  text-wrap: pretty;
   color: #ece2d9;
 }
 
