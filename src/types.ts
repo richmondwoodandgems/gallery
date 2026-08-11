@@ -19,6 +19,7 @@ export interface Piece {
 
 export interface Manifest {
   generatedAt: string;
-  about: string;
+  intro: string;
+  showcase: Photo[];
   items: Piece[];
 }

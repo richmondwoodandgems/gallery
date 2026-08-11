@@ -11,6 +11,8 @@ Static site, hosted free on GitHub Pages.
 ## How it works
 
 ```
+content/intro.txt        wording at the top of the site
+content/showcase/**      staged "at home" photos shown near the top, in name order
 content/gallery/**       source photos (committed to git — the only thing that changes day to day)
 scripts/build-manifest.mjs  scans photos, renders webp derivatives, writes the manifest
 public/media/            generated derivatives (gitignored)

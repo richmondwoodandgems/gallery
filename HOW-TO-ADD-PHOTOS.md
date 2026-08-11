@@ -66,7 +66,12 @@ It shows up exactly the way you type it: every line you write stays on its own l
 and leaving a blank line starts a new paragraph. Long paragraphs wrap on their own, so
 don't press return in the middle of a sentence.
 
-To change the paragraph shown beneath the whole gallery, edit `content/about.txt`.
+Two other text spots on the site are editable the same way:
+
+- `content/intro.txt` — the wording at the top of the site, under the title.
+- `content/showcase` — the row of staged "at home" photos near the top. Drop pictures
+  into that folder; they show in name order, so `1.jpg`, `2.jpg`, `3.jpg` controls the
+  sequence.
 
 ---
 

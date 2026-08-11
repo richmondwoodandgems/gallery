@@ -81,13 +81,84 @@ body {
   font-weight: 500;
 }
 
-.tagline {
-  margin: 0;
+.intro {
+  margin: 1.25rem auto 0;
+  max-width: 44rem;
   color: var(--ink-soft);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.intro p {
+  margin: 0 0 0.9em;
+}
+
+.intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- showcase ---------- */
+
+/* Staged in-the-home shots; a quiet band between the intro and the catalog. */
+.showcase {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin: 0 0 3.5rem;
+}
+
+.showcase img {
+  height: 230px;
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 720px) {
+  .showcase img {
+    height: 150px;
+  }
+}
+
+/* ---------- collection ---------- */
+
+.collection {
+  max-width: 46rem;
+  margin: 0 auto 3.5rem;
+  text-align: center;
+}
+
+.collection h2 {
   font-family: var(--serif);
-  font-style: italic;
-  font-size: clamp(1.2rem, 2.2vw, 1.4rem);
-  text-wrap: balance;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-weight: 500;
+  margin: 0 0 1.5rem;
+}
+
+.collection ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.collection-name {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+
+.collection-blurb {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
 }
 
 /* ---------- grid ---------- */
@@ -464,44 +535,11 @@ body {
   background: rgb(30 22 18 / 78%);
 }
 
-/* ---------- story ---------- */
-
-/*
- * The about text sits beneath the gallery, statement-after-work, the way a
- * gallery hangs its artist statement past the pieces.
- */
-.story {
-  max-width: 40rem;
-  margin: 4.5rem auto 0;
-  text-align: center;
-  color: var(--ink-soft);
-  font-size: 1.02rem;
-  line-height: 1.8;
-}
-
-.story p {
-  margin: 0 0 0.9em;
-}
-
-.story p:last-child {
-  margin-bottom: 0;
-}
-
-.story::before {
-  content: '';
-  display: block;
-  width: 3rem;
-  height: 1px;
-  background: var(--accent);
-  opacity: 0.5;
-  margin: 0 auto 2.5rem;
-}
-
 /* ---------- footer ---------- */
 
 .footer {
   margin-top: 4rem;
-  padding-top: 1.5rem;
+  padding-top: 2rem;
   border-top: 1px solid var(--line);
   text-align: center;
   color: var(--ink-soft);
@@ -510,6 +548,35 @@ body {
 
 .footer p {
   margin: 0.25rem 0;
+}
+
+.contact {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--ink);
+}
+
+.contact a {
+  color: var(--accent-ink);
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.care {
+  max-width: 40rem;
+  margin: 1.75rem auto 2rem;
+}
+
+.care h2 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 0.6rem;
+}
+
+.care p {
+  margin: 0.2rem 0;
 }
 
 /* ---------- motion preferences ---------- */

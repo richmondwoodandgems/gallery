@@ -346,16 +346,36 @@ async function main() {
     });
   }
 
-  let about = '';
+  let intro = '';
   try {
-    about = normalizeText(await fs.readFile(path.join(ROOT, 'content', 'about.txt'), 'utf8'));
+    intro = normalizeText(await fs.readFile(path.join(ROOT, 'content', 'intro.txt'), 'utf8'));
   } catch {
     /* optional */
   }
 
+  // Staged lifestyle shots for the strip near the top of the page. Flat
+  // folder, shown in file-name order — number them 1.jpg, 2.jpg, ... to
+  // control the sequence.
+  const showcase = [];
+  const showcaseDir = path.join(ROOT, 'content', 'showcase');
+  await fs.mkdir(showcaseDir, { recursive: true });
+  const showcaseFiles = (await fs.readdir(showcaseDir))
+    .filter((name) => !name.startsWith('.') && IMAGE_EXT.has(path.extname(name).toLowerCase()))
+    .sort(byNaturalName);
+  for (const [order, name] of showcaseFiles.entries()) {
+    const file = path.join(showcaseDir, name);
+    const digest = createHash('sha1').update(await fs.readFile(file)).digest('hex');
+    try {
+      showcase.push({ order, ...(await processImage(file, digest, cache, nextCache)) });
+    } catch (err) {
+      skipped.push(`showcase/${name} (${err.message})`);
+    }
+  }
+
   const manifest = {
     generatedAt: new Date().toISOString(),
-    about,
+    intro,
+    showcase,
     items,
   };
 
