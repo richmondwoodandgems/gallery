@@ -3,6 +3,7 @@ import manifestData from './data/manifest.json';
 import Lightbox from './components/Lightbox';
 import JustifiedGrid from './components/JustifiedGrid';
 import EmptyState from './components/EmptyState';
+import Prose from './components/Prose';
 import type { Manifest, Piece } from './types';
 
 const manifest = manifestData as Manifest;
@@ -53,7 +54,11 @@ export default function App() {
         {manifest.items.length === 0 ? <EmptyState /> : <JustifiedGrid items={manifest.items} onOpen={open} />}
       </main>
 
-      {manifest.about && <section className="story">{manifest.about}</section>}
+      {manifest.about && (
+        <section className="story">
+          <Prose text={manifest.about} />
+        </section>
+      )}
 
       <footer className="footer">
         <p>A gallery of finished work — pieces are not sold through this site.</p>

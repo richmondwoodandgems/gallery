@@ -83,17 +83,18 @@ function titleize(stem) {
 }
 
 /**
- * Text files are rendered with `white-space: pre-line`, so a line break in the
- * file would show up on the page. Line-wrapping inside a paragraph is collapsed
- * to spaces; a blank line still starts a new paragraph.
+ * Text files render line-for-line: every line typed stays its own line, and a
+ * blank line separates paragraphs. Only line endings, trailing spaces, and
+ * runs of extra blank lines are cleaned up.
  */
 function normalizeText(raw) {
   return raw
     .replace(/\r\n?/g, '\n')
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim())
-    .filter(Boolean)
-    .join('\n\n');
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /** Pieces are keyed by lowercased stem so "Board.JPG" and "board/" match up. */

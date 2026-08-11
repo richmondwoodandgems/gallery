@@ -62,8 +62,9 @@ A13/
     A13 Hickory.txt      <- "Hickory with amethyst and clear quartz. 34 inches."
 ```
 
-Write it however you like — long lines wrap on their own, and leaving a blank line
-starts a new paragraph.
+It shows up exactly the way you type it: every line you write stays on its own line,
+and leaving a blank line starts a new paragraph. Long paragraphs wrap on their own, so
+don't press return in the middle of a sentence.
 
 To change the paragraph shown beneath the whole gallery, edit `content/about.txt`.
 

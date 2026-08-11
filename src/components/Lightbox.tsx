@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { asset } from '../asset';
+import Prose from './Prose';
 import type { Piece } from '../types';
 
 interface Props {
@@ -174,7 +175,11 @@ export default function Lightbox({ piece, onClose }: Props) {
 
         <figcaption>
           <h2>{piece.title}</h2>
-          {piece.description && <p className="lb-desc">{piece.description}</p>}
+          {piece.description && (
+            <div className="lb-desc">
+              <Prose text={piece.description} />
+            </div>
+          )}
           {count > 1 && (
             <p className="muted">
               {index + 1} of {count}
