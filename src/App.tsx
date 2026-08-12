@@ -81,7 +81,7 @@ export default function App() {
               key={photo.thumb}
               src={asset(photo.thumbSmall)}
               srcSet={`${asset(photo.thumbSmall)} 700w, ${asset(photo.thumb)} 1400w`}
-              sizes="330px"
+              sizes="480px"
               alt=""
               loading="lazy"
               decoding="async"
